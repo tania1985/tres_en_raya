@@ -1,59 +1,64 @@
 var turno = 'X';
 var celdas = document.querySelectorAll('.celda');
-var juegoTerminado = false;  // Bandera para controlar si el juego ha terminado
-var movimientosRealizados = 0;  // Contador para llevar el registro de los movimientos
+var movimientos = 0;
+var juegoTerminado = false; // Variable para controlar si el juego ha terminado
 
 celdas.forEach(function(celda) {
     celda.onclick = function() {
-        if (this.innerHTML == '' && !juegoTerminado) {  // Solo se permite hacer clic si la celda está vacía y el juego no ha terminado
-            this.innerHTML = turno;  // Coloca la marca del jugador en la celda
-            movimientosRealizados++;  // Aumenta el contador de movimientos
-
-            if (comprobarGanador()) {  // Llama a la función comprobarGanador para ver si alguien ha ganado
-                alert('¡Ganador: ' + turno + '!');  // Muestra un mensaje con el ganador (X o O)
-                juegoTerminado = true;  // Finaliza el juego
-            } else if (movimientosRealizados === 9) {  // Si se han realizado 9 movimientos (todas las celdas están llenas)
-                alert('¡Empate!');  // Muestra un mensaje de empate
-                juegoTerminado = true;  // Finaliza el juego
-            }
-
-            // Cambia el turno al otro jugador (si es 'X' pasa a 'O' y viceversa)
+        if (!juegoTerminado && this.innerHTML == '') {
+            this.innerHTML = turno;
+            movimientos++;
+            this.classList.add(turno); // Agregar clase para colores
+            comprobarGanador();
             turno = (turno == 'X') ? 'O' : 'X';
         }
     }
 });
 
 function comprobarGanador() {
-    // Verifica las combinaciones horizontales
-    for (let i = 0; i < 3; i++) {
-        if (celdas[i * 3].innerHTML != '' && 
-            celdas[i * 3].innerHTML == celdas[i * 3 + 1].innerHTML && 
-            celdas[i * 3].innerHTML == celdas[i * 3 + 2].innerHTML) {
-            return true;
+    var combinaciones = [
+        [0, 1, 2], // Fila 1
+        [3, 4, 5], // Fila 2
+        [6, 7, 8], // Fila 3
+        [0, 3, 6], // Columna 1
+        [1, 4, 7], // Columna 2
+        [2, 5, 8], // Columna 3
+        [0, 4, 8], // Diagonal 1
+        [2, 4, 6], // Diagonal 2
+    ];
+
+    for (var i = 0; i < combinaciones.length; i++) {
+        var [a, b, c] = combinaciones[i];
+        if (celdas[a].innerHTML !== '' && celdas[a].innerHTML === celdas[b].innerHTML && celdas[a].innerHTML === celdas[c].innerHTML) {
+            // Ganador encontrado, mostrar mensaje después de 2 segundos
+            juegoTerminado = true; // Finalizamos el juego
+            setTimeout(function() {
+                alert('Ganador: ' + celdas[a].innerHTML);
+                resetJuego();
+            }, 2000);
+            return;
         }
     }
 
-    // Verifica las combinaciones verticales
-    for (let i = 0; i < 3; i++) {
-        if (celdas[i].innerHTML != '' && 
-            celdas[i].innerHTML == celdas[i + 3].innerHTML && 
-            celdas[i].innerHTML == celdas[i + 6].innerHTML) {
-            return true;
-        }
+    // Verificar si hay empate
+    if (movimientos === 9) {
+        juegoTerminado = true; // Finalizamos el juego
+        setTimeout(function() {
+            alert('¡Empate!');
+            resetJuego();
+        }, 2000);
     }
+}
 
-    // Verifica las diagonales
-    if (celdas[0].innerHTML != '' && 
-        celdas[0].innerHTML == celdas[4].innerHTML && 
-        celdas[0].innerHTML == celdas[8].innerHTML) {
-        return true;
-    }
-
-    if (celdas[2].innerHTML != '' && 
-        celdas[2].innerHTML == celdas[4].innerHTML && 
-        celdas[2].innerHTML == celdas[6].innerHTML) {
-        return true;
-    }
-
-    return false;  // Si no hay ganador, retorna false
+function resetJuego() {
+    // Reiniciar juego
+    setTimeout(function() {
+        celdas.forEach(function(celda) {
+            celda.innerHTML = '';
+            celda.classList.remove('X', 'O');
+        });
+        turno = 'X';
+        movimientos = 0;
+        juegoTerminado = false; // Reiniciamos el estado del juego
+    }, 2000);
 }
